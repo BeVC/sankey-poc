@@ -1,1 +1,99 @@
 /* You can add global styles to this file, and also import other style files */
+.info-wrap {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .info-block {
+        display: flex;
+
+        &:first-of-type {
+            font-family: "Arial";
+        }
+
+        &:last-of-type {
+            min-width: 50px;
+            min-height: 25px;
+            max-width: 50px;
+            max-height: 25px;
+
+            span {
+                font-family: "Arial";
+                cursor: pointer;
+                position: absolute;
+                left: calc(50% + 12px);
+                transform: rotateZ(90deg) translateX(15px);
+                transform-origin: left top;
+                height: 24px;
+                display: flex;
+                align-items: center;
+            }
+        }
+    }
+}
+
+.sankey-tooltip {
+    background-color: white;
+    border: 1px solid #dedede;
+    box-shadow: 0 0 10px #00000014;
+    padding: 10px 10px 25px 10px;
+
+    .title {
+        font-size: 13px;
+        font-family: Arial;
+        font-weight: bold;
+        line-height: 16px;
+        color: #003161;
+
+        span {
+            margin-left: 5px;
+            font-weight: 400;
+            color: #ADADAD;
+        }
+    }
+
+    table {
+        tr {
+            td {
+                font-size: 12px;
+                line-height: 14px;
+                font-family: Arial;
+
+                &:first-of-type {
+                    color: #003161;
+                    text-align:right;
+                }
+
+                &:nth-of-type(2) {
+                    text-align: left;
+                    &.very-pos {
+                        color: #15B700;
+                    }
+
+                    &.pos {
+                        color: #AED52C;
+                    }
+
+                    &.unknown {
+                        color: #ADADAD;
+                    }
+
+                    &.neg {
+                        color: #FF861E;
+                    }
+
+                    &.very-neg {
+                        color: #FF1E5D;
+                    }
+                }
+
+                &:last-of-type {
+                    text-align: left;
+                    color: #ADADAD;
+                }
+            }
+        }
+    }
+}
