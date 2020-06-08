@@ -1,6 +1,16 @@
 <div class="wrap">
-    <div id="container" #container></div>
-    <p>slkfklsdfjklsd</p>
+    <div class="range">
+        <button (click)="uiSetRangeClicked(400, 300)">CHANGE RANGE (400-300)</button>
+        <button (click)="uiSetRangeClicked(500, 0)">RESET (500-0)</button>
+    </div>
+    <div class="chart-wrap">
+        <div id="container" #container></div>
+        <div class="legend">
+            <p *ngFor="let item of legend">
+                <span class="dot" style="background-color:{{item.color}}"></span> {{item.name}}
+            </p>
+        </div>
+    </div>
 </div>
 
 

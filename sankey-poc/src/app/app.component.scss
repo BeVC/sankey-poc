@@ -1,8 +1,36 @@
-.wrap{
+.wrap {
     padding: 20px;
 
-}
+    .range {
+    }
 
-#container{
-    border: 1px solid black;
+    .chart-wrap {
+        border: 1px solid black;
+        display: flex;
+        //align-items: flex-start;
+        #container {
+            width: calc(100% - 100px);
+        }
+
+        .legend {
+            align-self: flex-end;
+            width: 100px;
+            p {
+                font-size: 11px;
+                line-height: 16px;
+                font-family: Arial;
+                display: flex;
+                align-items: center;
+                margin: 0;
+
+                .dot {
+                    width: 8px;
+                    height: 8px;
+                    display: inline-block;
+                    border-radius: 50%;
+                    margin-right: 6px;
+                }
+            }
+        }
+    }
 }

@@ -5,6 +5,32 @@ import Sankey from 'highcharts/modules/sankey';
 //import HighchartsOrganization from 'highcharts/modules/organization';
 //import HighchartsExporting from 'highcharts/modules/exporting';
 
+//Highcharts["seriesTypes"].sankey.prototype.pointAttribs = function (point, state) {
+//    var opacity = this.options.linkOpacity,
+//        color = point.color;
+
+//    if (state) {
+//        opacity = this.options.states[state].linkOpacity || opacity;
+//        color = this.options.states[state].color || point.color;
+//    }
+
+//    return {
+//        fill: point.isNode ?
+//            color : {
+//                linearGradient: {
+//                    x1: 0,
+//                    x2: 1,
+//                    y1: 0,
+//                    y2: 0
+//                },
+//                stops: [
+//                    [0, Highcharts.color(color).setOpacity(opacity).get()],
+//                    [1, Highcharts.color(point.toNode.color).setOpacity(opacity).get()]
+//                ]
+//            }
+//    };
+//}
+
 Sankey(Highcharts);
 //HighchartsOrganization(Highcharts);
 //HighchartsExporting(Highcharts);
@@ -24,6 +50,10 @@ Sankey(Highcharts);
 // HOW SANKEY CALCULATES THE WEIGHT
 //https://stackoverflow.com/questions/51082744/how-to-calculate-the-weights-in-a-sankey-chart
 
+///////////
+
+///////////
+
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
@@ -33,8 +63,11 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     showSidepanel: boolean = false;
     selectedTitle: string;
-    linkColor: "#66D3DDEB";
-    //linkColor: "rgba(211, 221, 235, 0.4)";
+    legend: { name: string, color: string }[] = [];
+    nodeAnchor: number;
+    //linkColor: "#66D3DDEB";
+    linkColor: "rgba(211, 221, 235, 0.4)";
+    //linkColor:"transparent linear-gradient(270deg, #D3DDEB 0%, #BCCCE2 100%)"
 
     chartData = [
         { nodeColor: "red", color: this.linkColor, from: "344 Personnel", to: "21 Agent Interaction", weight: 70 },
@@ -51,32 +84,55 @@ export class AppComponent implements OnInit, AfterViewInit {
         { nodeColor: "red", color: this.linkColor, from: "4 Availability", to: "4 About", weight: 5 }
     ]
 
+    chartDataAdd = [
+        { nodeColor: "red", color: this.linkColor, from: "7 To", to: "2 Product", weight: 5 },
+        { nodeColor: "red", color: this.linkColor, from: "7 To", to: "9 Hotel", weight: 5 },
+    ]
+
+    chartDataFiltered = [
+        { nodeColor: "red", color: this.linkColor, from: "344 Personnel", to: "21 Agent Interaction", weight: 70 },
+        { nodeColor: "red", color: this.linkColor, from: "344 Personnel", to: "3 Assistance", weight: 20 },
+        { nodeColor: "red", color: this.linkColor, from: "344 Personnel", weight: 10 },
+        { nodeColor: "green", color: this.linkColor, from: "144 Product", to: "6 Account", weight: 15 },
+        { nodeColor: "green", color: this.linkColor, from: "144 Product", to: "7 Loans", weight: 7 },
+        { nodeColor: "green", color: this.linkColor, from: "144 Product", to: "10 Delivery", weight: 3 },
+    ]
+
     @ViewChild("container") public chartEl: ElementRef;
     chart;
     Highcharts = Highcharts;
     chartConstructor = "chart";
-    chartOptions: any = {
-        chart: {},
-        title: {
-            text: 'Highcharts Sankey Diagram'
-        },
-        /*accessibility: {
-            point: {
-                valueDescriptionFormat: '{index}. {point.from} to {point.to}, {point.weight}.'
-            }
-        },*/
-        tooltip: {
-            useHTML: true,
-            borderWidth: 0,
-            backgroundColor: 0,
-            borderRadius: 100,
-            nodeFormatter: function () {
-                return "";
+    chartOptions: any;
+
+    ngOnInit() {
+    }
+
+    ngAfterViewInit() {
+        let self = this;
+        this.chartOptions = {
+            chart: {
+                marginRight: "60"
             },
-            headerFormat: undefined,
-            footerFormat: undefined,
-            pointFormatter: function () {
-                return `<div class='sankey-tooltip'>
+            title: {
+                text: 'Highcharts Sankey Diagram'
+            },
+            /*accessibility: {
+                point: {
+                    valueDescriptionFormat: '{index}. {point.from} to {point.to}, {point.weight}.'
+                }
+            },*/
+            tooltip: {
+                useHTML: true,
+                borderWidth: 0,
+                backgroundColor: 0,
+                borderRadius: 100,
+                nodeFormatter: function () {
+                    return "";
+                },
+                headerFormat: undefined,
+                footerFormat: undefined,
+                pointFormatter: function () {
+                    return `<div class='sankey-tooltip'>
                             <p class='title'>`+ "Product" + `<span>(` + this.options.weight + `)</span></p>
                             <table>
                                 <tr>
@@ -106,74 +162,96 @@ export class AppComponent implements OnInit, AfterViewInit {
                                 </tr>
                             </table>
                         </div>`;
-            }
-        },
-        plotOptions: {
-            // FORMATTING THE DATALABELS: http://jsfiddle.net/w9pzhug6/
-            // https://stackoverflow.com/questions/52475863/how-to-align-the-labels-of-sankey-diagram
-            sankey: {
-                nodeWidth: 40,
-                colorByPoint: false,
-                dataLabels: {
-                    enabled: true,
-                    useHTML: true,
-                    color: "black",
-                    allowOverlap: true,
-                    rotation: 270,
-                    visible: true,
-                    nodeFormatter: function (point) {
-                        //console.log(this, point);
-                        let item = this.key.split(" ");
-                        return `<div class='info-wrap'>
+                }
+            },
+            //legend: {
+            //    useHTML: true,
+            //    labelFormatter: function () {
+            //        //let items = this;
+            //        setTimeout(() => {
+            //            let forLegend = [];
+            //            let myItems = this;
+            //            for (let node of myItems.nodeColumns[0]) {
+
+            //                forLegend.push({ color:node.color, name: node.name });
+
+            //            }
+            //            //console.log(forLegend);
+            //        }, 500)
+            //    }
+            //},
+            plotOptions: {
+                // FORMATTING THE DATALABELS: http://jsfiddle.net/w9pzhug6/
+                // https://stackoverflow.com/questions/52475863/how-to-align-the-labels-of-sankey-diagram
+                sankey: {
+                    nodeWidth: 40,
+                    colorByPoint: false,
+                    dataLabels: {
+                        enabled: true,
+                        useHTML: true,
+                        color: "black",
+                        allowOverlap: true,
+                        rotation: 270,
+                        visible: true,
+                        nodeFormatter: function (point) {
+                            //console.log(this, point);
+                            let item = this.key.split(" ");
+                            return `<div class='info-wrap'>
                                 <div class='info-block'>` + item[0] + `</div>
                                 <div class='info-block'>
                                 <span class='clickme' data-item='`+ item[1] + `'>` + item[1] + `</span>
                                 </div>
                                 </div>`
+                        }
                     }
                 }
-            }
-        },
-        series: [{
-            //colors: ["red", "green", "blue"],
-            keys: ["color", 'from', 'to', 'weight'],
-            nodes: [
-                /*{
-                    id: "7 To",
-                    column: 3,
-                    color: "grey"
+            },
+            series: [{
+                keys: ["color", 'from', 'to', 'weight'],
+                nodes: [],
+                point: {
+                    events: {
+                        click: function (point) {
+                            let pointy = point;
+                            let item = this;
+                            console.log("I've been clicked: " + point.point.name);
+                            if (point.point.name === "7 To") {
+                                self.extendData();
+                            }
+                        }
+                    }
                 },
-                {
-                    id: "4 About",
-                    column: 3,
-                    color: "grey"
-                }*/
-            ],
-            data: [],
-            /*data: [
-                { color: "red", from: "344 Personnel", to: "21 Agent Interaction", weight: 20 },
-                { color: "red", from: "344 Personnel", to: "3 Assistance", weight: 5 },
-                { color: "green", from: "144 Product", to: "6 Account", weight: 15},
-                { color: "green", from: "144 Product", to: "7 Loans", weight: 7},
-                { color: "green", from: "144 Product", to: "5 Assistance", weight: 3},
-                { color: "blue", from: "78 Price", to: "7 To", weight: 10},
-                { color: "blue", from: "78 Price", to: "3 Assistance", weight: 1},
-                { color: "red", from: "21 Agent Interaction", to: "4 Availability", weight: 10 },
-                { color: "red", from: "4 Availability", to: "7 To", weight: 5},
-                { color: "green", from: "6 Account", to: "4 About", weight: 5},
-                { color: "red", from: "4 Availability", to: "4 About", weight: 5}  
+                //showInLegend: true,
+                data: [],
+                states: {
+                    hover: {
+                        /*color: {
+                            linearGradient: { x1: 0, x2: 1, y1: 0, y2: 0 },
+                            stops: [
+                                //[0, "#D3DDEB66"],
+                                //[1, "#BCCCE266"]
+                                [0, 'rgba(1,138,255,0.40378158099177175)'], // start
+                                [0.5, 'rgba(76,188,251,0.4009804605435925)'], // middle
+                                [1, 'rgba(175,244,255,0.4009804605435925)'] // end
+                            ]
+                        }*/
+                    },
+                    /*normal: {
+                        color: {
+                            linearGradient: { x1: 0, x2: 1, y1: 0, y2: 0 },
+                            stops: [
+                                [0, "#D3DDEB66"],
+                                [1, "#BCCCE266"]
+                            ]
+                        }
+                    }*/
+                },
+                type: 'sankey',
+                name: 'Sankey demo series'
+            }]
 
-            ],*/
-            type: 'sankey',
-            name: 'Sankey demo series'
-        }]
+        }
 
-    }
-
-    ngOnInit() {
-    }
-
-    ngAfterViewInit() {
         this.initChart();
 
         let children = document.getElementsByClassName("clickme");
@@ -204,6 +282,27 @@ export class AppComponent implements OnInit, AfterViewInit {
     appOnClosePanelEmit(state: boolean) {
         this.showSidepanel = false;
         this.selectedTitle = undefined;
+    }
+
+    /**
+     * /
+     * @param high
+     * @param low
+     *
+     * what is important here is that the existing chart can be updated by using 'setData'
+     */
+    uiSetRangeClicked(high: number, low: number) {
+        if (high === 400 && low === 300) {
+            let newData = this.chartDataFiltered;
+            let nodes = this.prepNodes(this.chartDataFiltered);
+            this.chartOptions.series[0].nodes = nodes;
+            this.chart.series[0].setData(newData);
+        } else {
+            let newData = this.chartData;
+            let nodes = this.prepNodes(this.chartData);
+            this.chartOptions.series[0].nodes = nodes;
+            this.chart.series[0].setData(newData);
+        }
     }
     //////
     private prepNodes(data) {
@@ -239,16 +338,22 @@ export class AppComponent implements OnInit, AfterViewInit {
                 highestLevel = item.level;
             }
         }
+        //console.log(catLevels);
 
         // set special nodes to their end level
         let toResult = catLevels.find(item => item.name === "7 To");
-        toResult.level = highestLevel + 1;
+        if (toResult !== undefined) {
+            toResult.level = highestLevel + 1;
+            this.nodeAnchor = toResult.level;
+        }
         let aboutResult = catLevels.find(item => item.name === "4 About");
-        aboutResult.level = highestLevel + 1;
+        if (aboutResult !== undefined) {
+            aboutResult.level = highestLevel + 1;
+        }
 
         // sort
         catLevels.sort((a, b) => (a.level > b.level) ? 1 : -1);
-        console.log(catLevels);
+        //console.log(catLevels);
 
         // set colors to node and create node objects for chart
         let nodes = [];
@@ -269,6 +374,97 @@ export class AppComponent implements OnInit, AfterViewInit {
 
             nodes.push(node);
         }
+
+        // determine content of legend
+        this.legend = [];
+        for (let node of nodes) {
+            if (node.column === 0) {
+                this.legend.push({ name: node.id, color: node.color });
+            }
+        }
         return nodes;
+    }
+
+    private prepNewNodes(data) {
+        let catLevels: { name: string, level: number, color: string }[] = [];
+
+        // determines the levels for the nodes
+        for (let item of data) {
+            let level: number = 0
+            let color: string = "";
+
+            let fromResult = catLevels.find(lvl => lvl.name === item.from);
+            if (fromResult === undefined) {
+                catLevels.push({ name: item.from, level: this.nodeAnchor + level, color: item.nodeColor });
+                color = item.nodeColor;
+            } else {
+                level = fromResult.level;
+                color = fromResult.color;
+            }
+
+            let toResult = catLevels.find(lvl => lvl.name === item.to);
+            if (toResult == undefined) {
+                catLevels.push({ name: item.to, level: this.nodeAnchor + level + 1, color: color });
+            }
+        }
+
+        // filter out the nodes without destination
+        catLevels = catLevels.filter(item => item.name !== undefined);
+
+        // determine highest level of nodes
+        /*let highestLevel: number = 0;
+        for (let item of catLevels) {
+            if (item.level > highestLevel) {
+                highestLevel = item.level;
+            }
+        }*/
+        //this.nodeAnchor = highestLevel;
+
+        // clear special nodes to prevent duplicates
+        let toResult = catLevels.find(item => item.name === "7 To");
+        if (toResult !== undefined) {
+            let index = catLevels.findIndex(item => item.name === "7 To");
+            if (index !== -1) {
+                catLevels.splice(index, 1);
+            }
+        }
+        let aboutResult = catLevels.find(item => item.name === "4 About");
+        if (aboutResult !== undefined) {
+            let index = catLevels.findIndex(item => item.name === "4 About");
+            if (index !== -1) {
+                catLevels.splice(index, 1);
+            }
+        }
+
+        catLevels.sort((a, b) => (a.level > b.level) ? 1 : -1);
+
+        let nodes = [];
+        for (let item of catLevels) {
+            let color = "";
+
+            //if (item.name === "7 To" || item.name === "4 About") {
+            //    color = "#BBC6D6";
+            //} else {
+                color = "#003161";
+            //}
+
+            let node = {
+                id: item.name,
+                column: item.level,
+                color: color
+            }
+
+            nodes.push(node);
+        }
+
+        return nodes;
+    }
+
+    private extendData() {
+        let newData = this.chartData.concat(this.chartDataAdd);
+        let nodes = this.prepNewNodes(this.chartDataAdd);
+        this.chartOptions.series[0].nodes = this.chartOptions.series[0].nodes.concat(nodes);
+
+        this.chart.series[0].setData(newData);
     }
 }
