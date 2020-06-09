@@ -233,6 +233,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 }
             },
             series: [{
+                colors: ["gold", "blue", "silver"],
                 keys: ["color", 'from', 'to', 'weight'],
                 nodes: [],
                 point: {
@@ -281,16 +282,20 @@ export class AppComponent implements OnInit, AfterViewInit {
                                     self.chart.series[0].setData(newData);
                                     self.isExtended = false;
                                 }
-                            } else{
+                            } else {
                                 if (this.isNode) {
                                     //this.update({ color: "gold" });
                                     //this.color = "gold";
                                     //this.isSelected = true;
+                                    //let result = this.series.nodes.find(item => item.id === this.id);//.update({ color: "gold" });
+                                    //result;
+                                    //this.series.data.find(item => item.from === this.id).update({ nodeColor: "gold" });
                                     self.Highcharts.each(this.series.data, function (link) {
                                         link.setState(''); // reset old states
                                     });
                                     self.setStateRecursiveBackward(this);
                                     self.setStateRecursiveForward(this);
+                                    self.initialiseSidepanelEvents();
                                 }
                             }
                         },
@@ -304,9 +309,9 @@ export class AppComponent implements OnInit, AfterViewInit {
                 //showInLegend: true,
                 data: [],
                 states: {
-                    select: {
+                    /*select: {
                         color: "gold"
-                    },
+                    },*/
                     hover: {
                         //color:"#a4edba"
                         /*color: {
@@ -549,22 +554,47 @@ export class AppComponent implements OnInit, AfterViewInit {
     private setStateRecursiveBackward(node: any) {
         let self = this;
         this.Highcharts.each(node.linksTo, function (link) {
-            link.setState("select");
+            if (!self.chart.series[0].data.find(item => item.from === link.from).isColorUpdated) {
+                //let color = self.chart.series[0].data.find(item => item.from === link.from).nodeColor
+                self.chart.series[0].data.find(item => item.from === link.from).update({ color: "gold", isColorUpdated: true });
+            } else {
+                self.chart.series[0].data.find(item => item.from === link.from).update({ color: self.linkColor, isColorUpdated: false });
+            }
+            //link.setState("select");
             if (link.fromNode.linksTo.length > 0) {
                 self.setStateRecursiveBackward(link.fromNode);
             }
         })
     }
 
-    private setStateRecursiveForward(node: any, toRight: boolean = false) {
+    private setStateRecursiveForward(node: any, toRight: boolean = false/*, color?: string*/) {
+        //let newColor: string;
         let self = this;
+        /*if (color !== undefined) {
+            newColor = color;
+        }*/
+
         if (node !== undefined) {
-            let nodes = node.linksFrom.filter(item => item.to !== undefined && item.to !== null && item.to !== "")
-            this.Highcharts.each(nodes/*node.linksFrom*/, function (link) {
-                link.setState("select");
-                if (link.fromNode.linksFrom.length > 0) {
+            let nodes = node.linksFrom.filter(item => item.to !== undefined && item.to !== null && item.to !== "");
+            //console.log(...nodes);
+            this.Highcharts.each(nodes, function (link) {
+                let result = self.chart.series[0].data.find(item => item.from === link.from && item.to === link.to);
+
+                //if (!result.hasPassed) {
+                    if (!result.isColorUpdated) {
+                        /*if (color === undefined) {
+                            newColor = self.chart.series[0].data.find(item => item.from === link.from && item.to === link.to).nodeColor;
+                        }*/                        
+                        result.update({ color: "gold", isColorUpdated: true });
+                    } else {
+                        result.update({ color: self.linkColor, isColorUpdated: false });
+                    }
+                //}
+                //link.setState("select");
+                if (link.toNode.linksFrom.length > 0) {
                     toRight = true;
                     if (toRight) {
+                        console.log(link.fromNode.linksFrom);
                         for (let item of link.fromNode.linksFrom) {
                             self.setStateRecursiveForward(item.toNode, true);
                         }
