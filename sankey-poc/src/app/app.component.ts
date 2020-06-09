@@ -140,7 +140,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 marginRight: "60"
             },
             title: {
-                text: 'Highcharts Sankey Diagram'
+                //text: 'Highcharts Sankey Diagram'
             },
             /*accessibility: {
                 point: {
@@ -238,6 +238,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                 point: {
                     events: {
                         click: function (point) {
+                            //event.preventDefault();
                             let pointy = point;
                             let item = this;
                             console.log("I've been clicked: " + point.point.name);
@@ -260,12 +261,6 @@ export class AppComponent implements OnInit, AfterViewInit {
                                     self.Highcharts.each(this.series.data, function (link) {
                                         link.setState(''); // reset old states
                                     });
-                                    /*self.Highcharts.each(this.linksFrom, function (link) {
-                                        link.setState('select');
-                                    });*/
-                                    /*self.Highcharts.each(this.linksTo, function (link) {
-                                        link.setState('select');
-                                    });*/
                                     self.setStateRecursiveBackward(this);
                                     self.setStateRecursiveForward(this);
                                 }
@@ -309,14 +304,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
 
         this.initChart();
-
-        let children = document.getElementsByClassName("clickme");
-        for (let i = 0; i < children.length; i++) {
-            let child = children[i];
-            child.addEventListener("click", (event: Event) => {
-                this.uiClicked(child.getAttribute("data-item"));
-            });
-        }
+        this.initialiseSidepanelEvents();
     }
 
     private initChart() {
@@ -330,7 +318,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     //////
 
     uiClicked(name: string) {
-        //console.log(name);
+        event.preventDefault();
+        event.stopPropagation();
+        console.log(name);
         this.selectedTitle = name;
         this.showSidepanel = true;
     }
@@ -359,8 +349,19 @@ export class AppComponent implements OnInit, AfterViewInit {
             this.chartOptions.series[0].nodes = nodes;
             this.chart.series[0].setData(newData);
         }
+        this.initialiseSidepanelEvents();
     }
     //////
+    private initialiseSidepanelEvents() {
+        let children = document.getElementsByClassName("clickme");
+        for (let i = 0; i < children.length; i++) {
+            let child = children[i];
+            child.addEventListener("click", (event: Event) => {
+                this.uiClicked(child.getAttribute("data-item"));
+            });
+        }
+    }
+
     private prepNodes(data) {
         let catLevels: { name: string, level: number, color: string }[] = [];
 
@@ -508,6 +509,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.chartOptions.series[0].nodes = this.chartOptions.series[0].nodes.concat(nodes);
 
         this.chart.series[0].setData(newData);
+        this.initialiseSidepanelEvents();
     }
 
     private setStateRecursiveBackward(node:any) {
@@ -522,25 +524,20 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     private setStateRecursiveForward(node: any, toRight: boolean = false) {
         let self = this;
-        /*this.Highcharts.each(node.linksTo, function (link) {
-            link.setState("select");
-            if (link.fromNode.linksTo.length > 0) {
-                self.setStateRecursive(link.fromNode);
-            }
-        })*/
-
-        this.Highcharts.each(node.linksFrom, function (link) {
-            link.setState("select");
-            if (link.fromNode.linksFrom.length > 0) {
-                toRight = true;
-                if (toRight) {
-                    for (let item of link.fromNode.linksFrom) {
-                        self.setStateRecursiveForward(item.toNode, true);
+        if (node !== undefined) {
+            let nodes = node.linksFrom.filter(item => item.to !== undefined && item.to !== null && item.to !== "")
+            this.Highcharts.each(nodes/*node.linksFrom*/, function (link) {
+                link.setState("select");
+                if (link.fromNode.linksFrom.length > 0) {
+                    toRight = true;
+                    if (toRight) {
+                        for (let item of link.fromNode.linksFrom) {
+                            self.setStateRecursiveForward(item.toNode, true);
+                        }
                     }
                 }
-            }
-        })
-
+            })
+        }
 
     }
 }
