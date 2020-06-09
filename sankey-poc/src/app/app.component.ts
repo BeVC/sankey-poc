@@ -5,6 +5,17 @@ import Sankey from 'highcharts/modules/sankey';
 //import HighchartsOrganization from 'highcharts/modules/organization';
 //import HighchartsExporting from 'highcharts/modules/exporting';
 
+/*Highcharts.wrap(Highcharts["seriesTypes"]["sankey"]["prototype"], 'createNodeColumn', function (p) {
+    var column = p.apply(this, Array.prototype.slice.call(arguments, 1));
+
+    column.top = function (factor) {
+        return 0;
+    }
+
+    return column
+});*/
+
+
 //Highcharts["seriesTypes"].sankey.prototype.pointAttribs = function (point, state) {
 //    var opacity = this.options.linkOpacity,
 //        color = point.color;
@@ -46,6 +57,8 @@ Sankey(Highcharts);
 
 // HIGHLIGHT ALL PATHS
 // https://stackoverflow.com/questions/48211979/highcharts-sankey-highlight-all-paths-of-a-given-category
+// HIGHLIGHT LINKS ACROSS NODES
+// https://github.com/highcharts/highcharts/issues/8067
 
 // HOW SANKEY CALCULATES THE WEIGHT
 //https://stackoverflow.com/questions/51082744/how-to-calculate-the-weights-in-a-sankey-chart
@@ -65,6 +78,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     selectedTitle: string;
     legend: { name: string, color: string }[] = [];
     nodeAnchor: number;
+    isExtended: boolean = false;
     //linkColor: "#66D3DDEB";
     linkColor: "rgba(211, 221, 235, 0.4)";
     //linkColor:"transparent linear-gradient(270deg, #D3DDEB 0%, #BCCCE2 100%)"
@@ -103,6 +117,18 @@ export class AppComponent implements OnInit, AfterViewInit {
     Highcharts = Highcharts;
     chartConstructor = "chart";
     chartOptions: any;
+
+    constructor() {
+        // TOP ALIGNMENT OF COLUMNS
+        // https://github.com/highcharts/highcharts/issues/8653
+        this.Highcharts.wrap(this.Highcharts["seriesTypes"]["sankey"].prototype, "createNodeColumn", function (p) {
+            let column = p.apply(this, Array.prototype.slice.call(arguments, 1));
+            column.top = function (factor) {
+                return 0;
+            }
+            return column;
+        })
+    }
 
     ngOnInit() {
     }
@@ -215,8 +241,34 @@ export class AppComponent implements OnInit, AfterViewInit {
                             let pointy = point;
                             let item = this;
                             console.log("I've been clicked: " + point.point.name);
-                            if (point.point.name === "7 To") {
-                                self.extendData();
+                            if (point.point.name === "7 To" || point.point.name === "4 About") {
+                                if (!self.isExtended) {
+                                    self.extendData();
+                                    self.isExtended = true;
+                                } else {
+                                    let newData = self.chartData;
+                                    let nodes = self.prepNodes(self.chartData);
+                                    self.chartOptions.series[0].nodes = nodes;
+                                    self.chart.series[0].setData(newData);
+                                    self.isExtended = false;
+                                }
+                            } else{
+                                if (this.isNode) {
+                                    console.log("is a node");
+                                    //this.update({ color: "gold" });
+                                    //this.color = "gold";
+                                    self.Highcharts.each(this.series.data, function (link) {
+                                        link.setState(''); // reset old states
+                                    });
+                                    /*self.Highcharts.each(this.linksFrom, function (link) {
+                                        link.setState('select');
+                                    });*/
+                                    /*self.Highcharts.each(this.linksTo, function (link) {
+                                        link.setState('select');
+                                    });*/
+                                    self.setStateRecursiveBackward(this);
+                                    self.setStateRecursiveForward(this);
+                                }
                             }
                         }
                     }
@@ -224,7 +276,11 @@ export class AppComponent implements OnInit, AfterViewInit {
                 //showInLegend: true,
                 data: [],
                 states: {
+                    select: {
+                        color: "gold"
+                    },
                     hover: {
+                        //color:"#a4edba"
                         /*color: {
                             linearGradient: { x1: 0, x2: 1, y1: 0, y2: 0 },
                             stops: [
@@ -411,15 +467,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         // filter out the nodes without destination
         catLevels = catLevels.filter(item => item.name !== undefined);
 
-        // determine highest level of nodes
-        /*let highestLevel: number = 0;
-        for (let item of catLevels) {
-            if (item.level > highestLevel) {
-                highestLevel = item.level;
-            }
-        }*/
-        //this.nodeAnchor = highestLevel;
-
         // clear special nodes to prevent duplicates
         let toResult = catLevels.find(item => item.name === "7 To");
         if (toResult !== undefined) {
@@ -441,12 +488,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         let nodes = [];
         for (let item of catLevels) {
             let color = "";
-
-            //if (item.name === "7 To" || item.name === "4 About") {
-            //    color = "#BBC6D6";
-            //} else {
-                color = "#003161";
-            //}
+            color = "#003161";
 
             let node = {
                 id: item.name,
@@ -466,5 +508,39 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.chartOptions.series[0].nodes = this.chartOptions.series[0].nodes.concat(nodes);
 
         this.chart.series[0].setData(newData);
+    }
+
+    private setStateRecursiveBackward(node:any) {
+        let self = this;
+        this.Highcharts.each(node.linksTo, function (link) {
+        link.setState("select");
+        if (link.fromNode.linksTo.length > 0) {
+            self.setStateRecursiveBackward(link.fromNode);
+        }
+    })
+    }
+
+    private setStateRecursiveForward(node: any, toRight: boolean = false) {
+        let self = this;
+        /*this.Highcharts.each(node.linksTo, function (link) {
+            link.setState("select");
+            if (link.fromNode.linksTo.length > 0) {
+                self.setStateRecursive(link.fromNode);
+            }
+        })*/
+
+        this.Highcharts.each(node.linksFrom, function (link) {
+            link.setState("select");
+            if (link.fromNode.linksFrom.length > 0) {
+                toRight = true;
+                if (toRight) {
+                    for (let item of link.fromNode.linksFrom) {
+                        self.setStateRecursiveForward(item.toNode, true);
+                    }
+                }
+            }
+        })
+
+
     }
 }
