@@ -237,11 +237,39 @@ export class AppComponent implements OnInit, AfterViewInit {
                 nodes: [],
                 point: {
                     events: {
+                        /*click: function () {
+                            if (!this.isNode) {
+                                console.log("skljfkl");
+                            }
+                        }*/
+
                         click: function (point) {
                             //event.preventDefault();
-                            let pointy = point;
-                            let item = this;
-                            console.log("I've been clicked: " + point.point.name);
+                            //let pointy = point;
+                            //let item = this;
+                            //console.log("I've been clicked: " + point.point.name);
+                            /*if (this.isNode) {
+                                if (point.point.name === "7 To" || point.point.name === "4 About") {
+                                    if (!self.isExtended) {
+                                        self.extendData();
+                                        self.isExtended = true;
+                                    } else {
+                                        let newData = self.chartData;
+                                        let nodes = self.prepNodes(self.chartData);
+                                        self.chartOptions.series[0].nodes = nodes;
+                                        self.chart.series[0].setData(newData);
+                                        self.isExtended = false;
+                                    }
+                                }
+                            } else {
+                                self.Highcharts.each(this.series.data, function (link) {
+                                    link.setState(''); // reset old states
+                                });
+                                //self.setStateRecursiveBackward(this);
+                                self.setStateRecursiveForward(this);
+                            }*/
+
+
                             if (point.point.name === "7 To" || point.point.name === "4 About") {
                                 if (!self.isExtended) {
                                     self.extendData();
@@ -255,9 +283,9 @@ export class AppComponent implements OnInit, AfterViewInit {
                                 }
                             } else{
                                 if (this.isNode) {
-                                    console.log("is a node");
                                     //this.update({ color: "gold" });
                                     //this.color = "gold";
+                                    //this.isSelected = true;
                                     self.Highcharts.each(this.series.data, function (link) {
                                         link.setState(''); // reset old states
                                     });
@@ -265,6 +293,11 @@ export class AppComponent implements OnInit, AfterViewInit {
                                     self.setStateRecursiveForward(this);
                                 }
                             }
+                        },
+                        mouseOut: function () {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            event.stopImmediatePropagation();
                         }
                     }
                 },
@@ -500,6 +533,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             nodes.push(node);
         }
 
+        console.log(nodes);
         return nodes;
     }
 
@@ -512,14 +546,14 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.initialiseSidepanelEvents();
     }
 
-    private setStateRecursiveBackward(node:any) {
+    private setStateRecursiveBackward(node: any) {
         let self = this;
         this.Highcharts.each(node.linksTo, function (link) {
-        link.setState("select");
-        if (link.fromNode.linksTo.length > 0) {
-            self.setStateRecursiveBackward(link.fromNode);
-        }
-    })
+            link.setState("select");
+            if (link.fromNode.linksTo.length > 0) {
+                self.setStateRecursiveBackward(link.fromNode);
+            }
+        })
     }
 
     private setStateRecursiveForward(node: any, toRight: boolean = false) {
