@@ -271,33 +271,28 @@ export class AppComponent implements OnInit, AfterViewInit {
                             }*/
 
 
-                            if (point.point.name === "7 To" || point.point.name === "4 About") {
-                                if (!self.isExtended) {
-                                    self.extendData();
-                                    self.isExtended = true;
-                                } else {
-                                    let newData = self.chartData;
-                                    let nodes = self.prepNodes(self.chartData);
-                                    self.chartOptions.series[0].nodes = nodes;
-                                    self.chart.series[0].setData(newData);
-                                    self.isExtended = false;
-                                }
-                            } else {
-                                if (this.isNode) {
-                                    //this.update({ color: "gold" });
-                                    //this.color = "gold";
-                                    //this.isSelected = true;
-                                    //let result = this.series.nodes.find(item => item.id === this.id);//.update({ color: "gold" });
-                                    //result;
-                                    //this.series.data.find(item => item.from === this.id).update({ nodeColor: "gold" });
-                                    self.Highcharts.each(this.series.data, function (link) {
-                                        link.setState(''); // reset old states
-                                    });
-                                    self.setStateRecursiveBackward(this);
-                                    self.setStateRecursiveForward(this);
-                                    self.initialiseSidepanelEvents();
-                                }
+                            //if (point.point.name === "7 To" || point.point.name === "4 About") {
+                            //    if (!self.isExtended) {
+                            //        self.extendData();
+                            //        self.isExtended = true;
+                            //    } else {
+                            //       let newData = self.chartData;
+                            //        let nodes = self.prepNodes(self.chartData);
+                            //        self.chartOptions.series[0].nodes = nodes;
+                            //        self.chart.series[0].setData(newData);
+                            //        self.isExtended = false;
+                            //    }
+                            //} else {
+                            if (this.isNode) {
+                                //self.returnStates();
+                                /*self.Highcharts.each(this.series.data, function (link) {
+                                    link.setState(''); // reset old states
+                                });*/
+                                self.setStateRecursiveBackward(this);
+                                self.setStateRecursiveForward(this);
+                                self.initialiseSidepanelEvents();
                             }
+                            //}
                         },
                         mouseOut: function () {
                             event.preventDefault();
@@ -359,8 +354,21 @@ export class AppComponent implements OnInit, AfterViewInit {
         event.preventDefault();
         event.stopPropagation();
         console.log(name);
-        this.selectedTitle = name;
-        this.showSidepanel = true;
+        if (name === "To" || name === "About") {
+            if (!this.isExtended) {
+                this.extendData();
+                this.isExtended = true;
+            } else {
+                let newData = this.chartData;
+                let nodes = this.prepNodes(this.chartData);
+                this.chartOptions.series[0].nodes = nodes;
+                this.chart.series[0].setData(newData);
+                this.isExtended = false;
+            }
+        } else {
+            this.selectedTitle = name;
+            this.showSidepanel = true;
+        }
     }
 
     appOnClosePanelEmit(state: boolean) {
@@ -581,14 +589,14 @@ export class AppComponent implements OnInit, AfterViewInit {
                 let result = self.chart.series[0].data.find(item => item.from === link.from && item.to === link.to);
 
                 //if (!result.hasPassed) {
-                    if (!result.isColorUpdated) {
-                        /*if (color === undefined) {
-                            newColor = self.chart.series[0].data.find(item => item.from === link.from && item.to === link.to).nodeColor;
-                        }*/                        
-                        result.update({ color: "gold", isColorUpdated: true });
-                    } else {
-                        result.update({ color: self.linkColor, isColorUpdated: false });
-                    }
+                if (!result.isColorUpdated) {
+                    /*if (color === undefined) {
+                        newColor = self.chart.series[0].data.find(item => item.from === link.from && item.to === link.to).nodeColor;
+                    }*/
+                    result.update({ color: "gold", isColorUpdated: true });
+                } else {
+                    result.update({ color: self.linkColor, isColorUpdated: false });
+                }
                 //}
                 //link.setState("select");
                 if (link.toNode.linksFrom.length > 0) {
@@ -603,5 +611,13 @@ export class AppComponent implements OnInit, AfterViewInit {
             })
         }
 
+    }
+
+    private returnStates() {
+        let self = this;
+        let data = self.chart.series[0].data;
+        for (let item of data) {
+            item.update({ color: self.linkColor, isColorUpdated: false });
+        }
     }
 }
