@@ -18,7 +18,7 @@ HighchartsSolidGauge(Highcharts);
 })
 export class CesGaugeComponent implements OnInit, AfterViewInit {
 
-    rawData: number = 89;
+    rawData: number = 90;
     data = this.getData(this.rawData);
 
     @ViewChild("container") public chartEl: ElementRef;
@@ -28,7 +28,55 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
 
     constructor() {
         //http://jsfiddle.net/d6gzyqfj/15/
-        //this.Highcharts.wrap(this.Highcharts["seriesTypes"]["gauge"].prototype, 'translate', function (proceed) {
+        /*this.Highcharts.wrap(this.Highcharts["seriesTypes"]["gauge"].prototype, 'translate', function (proceed) {
+            var series = this,
+                yAxis = series.yAxis,
+                options = series.options,
+                center = yAxis.center;
+
+            series.generatePoints();
+
+            Highcharts.each(series.points, function (point) {
+
+                var dialOptions = Highcharts.merge(options.dial, point.dial),
+                    radius = (parseInt(Highcharts.pick(dialOptions.radius, 100)) * center[2]) / 200,
+                    baseLength = (parseInt(Highcharts.pick(dialOptions.baseLength, 100)) * radius) / 100,
+                    rearLength = (parseInt(Highcharts.pick(dialOptions.rearLength, -50)) * radius) / 100,
+                    baseWidth = dialOptions.baseWidth || 1,
+                    topWidth = dialOptions.topWidth || 1,
+                    overshoot = options.overshoot,
+                    rotation = yAxis.startAngleRad + yAxis.translate(point.y, null, null, null, true);
+
+                // Handle the wrap and overshoot options
+                if (Highcharts.isNumber(overshoot)) {
+                    overshoot = overshoot / 180 * Math.PI;
+                    rotation = Math.max(yAxis.startAngleRad - overshoot, Math.min(yAxis.endAngleRad + overshoot, rotation));
+
+                } else if (options.wrap === false) {
+                    rotation = Math.max(yAxis.startAngleRad, Math.min(yAxis.endAngleRad, rotation));
+                }
+
+                rotation = rotation * 180 / Math.PI;
+                console.log(rearLength, baseWidth, topWidth, baseLength, radius)
+                point.shapeType = 'path';
+                point.shapeArgs = {
+                    d: dialOptions.path || [
+                        'M', -rearLength, -baseWidth / 2,
+                        baseLength, baseWidth / 2, -rearLength, baseWidth / 2,
+
+                    ],
+                    translateX: center[0],
+                    translateY: center[1],
+                    rotation: rotation
+                };
+
+                point.plotX = center[0];
+                point.plotY = center[1];
+            });
+        });*/
+
+        //https://jsfiddle.net/rafal_S/st58ady3/
+        //this.Highcharts["seriesTypes"]["gauge"].prototype.translate = function () {
         //    var series = this,
         //        yAxis = series.yAxis,
         //        options = series.options,
@@ -39,10 +87,11 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
         //    Highcharts.each(series.points, function (point) {
 
         //        var dialOptions = Highcharts.merge(options.dial, point.dial),
-        //            radius = (parseInt(Highcharts.pick(dialOptions.radius, 100)) * center[2]) / 200,
-        //            baseLength = (parseInt(Highcharts.pick(dialOptions.baseLength, 100)) * radius) / 100,
-        //            rearLength = (parseInt(Highcharts.pick(dialOptions.rearLength, -50)) * radius) / 100,
-        //            baseWidth = dialOptions.baseWidth || 1,
+        //            isRectanglePoint = point.series.userOptions.isRectanglePoint,
+        //            radius = (parseInt(Highcharts.pick(dialOptions.radius, 80)) * center[2]) / 200,
+        //            baseLength = (parseInt(Highcharts.pick(dialOptions.baseLength, 70)) * radius) / 100,
+        //            rearLength = (parseInt(Highcharts.pick(dialOptions.rearLength, 10)) * radius) / 100,
+        //            baseWidth = dialOptions.baseWidth || 3,
         //            topWidth = dialOptions.topWidth || 1,
         //            overshoot = options.overshoot,
         //            rotation = yAxis.startAngleRad + yAxis.translate(point.y, null, null, null, true);
@@ -56,24 +105,48 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
         //            rotation = Math.max(yAxis.startAngleRad, Math.min(yAxis.endAngleRad, rotation));
         //        }
 
+
         //        rotation = rotation * 180 / Math.PI;
-        //        console.log(rearLength, baseWidth, topWidth, baseLength, radius)
-        //        point.shapeType = 'path';
-        //        point.shapeArgs = {
-        //            d: dialOptions.path || [
-        //                'M', -rearLength, -baseWidth / 2,
-        //                baseLength, baseWidth / 2, -rearLength, baseWidth / 2,
 
-        //            ],
-        //            translateX: center[0],
-        //            translateY: center[1],
-        //            rotation: rotation
-        //        };
+        //        // Checking series to draw dots
+        //        if (isRectanglePoint) {  //draw new dial
+        //            point.shapeType = 'path';
+        //            point.shapeArgs = {
+        //                d: dialOptions.path || [
+        //                    'M', -rearLength + 6, (-baseWidth / 2), 'L', -rearLength + 12, (-baseWidth / 2) + 6, -rearLength + 6, (-baseWidth / 2) + 12, -rearLength, (-baseWidth / 2) + 6, 'z'
+        //                ],
+        //                translateX: center[0] - baseWidth - 1,
+        //                translateY: center[1],
+        //                rotation: rotation,
+        //                style: 'stroke: white; fill: black; stroke-width: 2;'
+        //            };
 
+        //        } else {  //draw standard dial
+        //            point.shapeType = 'path';
+        //            point.shapeArgs = {
+        //                d: dialOptions.path || [
+        //                    'M', -rearLength, -baseWidth / 2,
+        //                    'L',
+        //                    baseLength, -baseWidth / 2,
+        //                    radius, -topWidth / 2,
+        //                    radius, topWidth / 2,
+        //                    baseLength, baseWidth / 2, -rearLength, baseWidth / 2,
+        //                    'z'
+        //                ],
+        //                translateX: center[0],
+        //                translateY: center[1],
+        //                rotation: rotation
+        //            };
+
+        //        }
+
+        //        // Positions for data label
         //        point.plotX = center[0];
         //        point.plotY = center[1];
+
+
         //    });
-        //});
+        //};
     }
 
     ngOnInit(): void {
@@ -85,15 +158,6 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
             chart: {
                 type: 'solidgauge',
                 marginTop: 10,
-                /*events: {
-                    load: function () {
-                        this.series[0].data[0].graphic.attr({
-                            fill: "none",
-                            stroke: "black",
-                            "stroke-width": 1
-                        })
-                    }
-                },*/
             },
 
             title: {
@@ -101,7 +165,7 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
             },
 
             subtitle: {
-                y: 45,
+                /*y: 45,
                 zIndex: 7,
                 verticalAlign: "middle",
                 useHTML: true,
@@ -111,7 +175,7 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
                     "<p class='score'>" + self.rawData + "</p>" +
                     "</div>" +
                     "<div class='thingy'></div>" +
-                    "</div>"
+                    "</div>"*/
             },
 
             tooltip: {
@@ -124,7 +188,7 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
                 background: [{ // Track for Move
                     outerRadius: '100%',
                     innerRadius: '70%',
-                    backgroundColor: this.Highcharts.color(this.Highcharts.getOptions().colors[0]).setOpacity(0.3).get(),  //Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0.3).get(),
+                    backgroundColor: "#DEDEDE",//this.Highcharts.color(this.Highcharts.getOptions().colors[0]).setOpacity(0.3).get(),  //Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0.3).get(),
                     borderWidth: 0,
                     shape: 'arc'
                 }],
@@ -173,22 +237,45 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
             series: [{
                 animation: false,
                 dataLabels: {
-                    enabled: false,
-                    /*useHTML: true,
-                    formatter: function (point) {                        
-                        return "<div class='solidgauge-score'>" +
+                    enabled: true,
+                    useHTML: true,
+                    formatter: function () {                        
+                        return "<div class='solidgauge-score-wrapper'>" +
+                            "<div class='solidgauge-score'>" +
                             "<p class='metric'>CES</p>" +
                             "<p class='score'>" + self.rawData + "</p>" +
+                            "</div>" +
+                            "<div class='thingy'></div>" +
+                            //"<div class='needle' style='transform:rotate(" + self.calculateDegrees(self.rawData) + "deg)'></div>" +
                             "</div>"
                     },
-                    verticalAlign:"bottom"*/
+                    verticalAlign: "bottom",
+                    borderWidth: 0,
+                    y: 35
                 },
                 borderWidth: 0,
                 color: Highcharts.getOptions().colors[0],
                 radius: '100%',
                 innerRadius: '70%',
                 data: self.data
-            }]
+            },
+            //    {
+            //        name: 'Customer Dot',
+            //        isRectanglePoint: true,
+            //        type: 'gauge',
+            //        data: [self.rawData-0.5],
+            //        dial: {
+            //            backgroundColor: Highcharts.getOptions().colors[1],
+            //            rearLength: '-121%'
+            //        },
+            //        dataLabels: {
+            //            enabled: false
+            //        },
+            //        pivot: {
+            //            radius: 0
+            //        }
+            //    }
+            ]
         }
 
         this.initChart();
@@ -197,6 +284,12 @@ export class CesGaugeComponent implements OnInit, AfterViewInit {
 
     private initChart() {
         this.chart = Highcharts.chart("container", this.chartOptions);
+    }
+
+    private calculateDegrees(score:number):number {
+        let degrees: number = 0;
+        degrees = (1.8 * score) - 90;
+        return degrees;
     }
 
     private getData(rawData): { y: number }[] {
