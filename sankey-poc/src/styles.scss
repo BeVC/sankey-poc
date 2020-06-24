@@ -63,11 +63,12 @@
 
                 &:first-of-type {
                     color: #003161;
-                    text-align:right;
+                    text-align: right;
                 }
 
                 &:nth-of-type(2) {
                     text-align: left;
+
                     &.very-pos {
                         color: #15B700;
                     }
@@ -98,4 +99,50 @@
     }
 }
 
+.solidgauge-score-wrapper {
+    position: relative;
 
+    .solidgauge-score {
+        background: #FFFFFF 0% 0% no-repeat padding-box;
+        box-shadow: 0px 0px 15px #0000001D;
+        width: 100px;
+        height: 100px;
+        border-top-left-radius: 50px;
+        border-top-right-radius: 50px;
+        border-bottom-left-radius: 50px;
+        border-bottom-right-radius: 50px;
+
+        .metric {
+            margin: 0 !important;
+            padding-top: 15px;
+            color: #ADADAD;
+            text-align: center;
+            font: Arial;
+            font-size: 14px;
+            line-height: 18px;
+            text-transform: uppercase;
+        }
+
+        .score {
+            margin: 0 !important;
+            color: #003261;
+            text-align: center;
+            font: Arial;
+            font-weight: bold;
+            font-size: 30px;
+            line-height: 42px;
+        }
+    }
+
+    .thingy {
+        /*width: 100px;
+        height: 100px;
+        background-color: green;*/
+        height: 40px;
+        position: absolute;
+        background-color: white;
+        width: 110px;
+        bottom: -10px;
+        left: -5px; 
+    }
+}
